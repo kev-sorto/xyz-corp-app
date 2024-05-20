@@ -1,113 +1,134 @@
-import Image from "next/image";
+'use client'
+
+import UserCard from "@/components/users/UserCard";
+import { fetchAllUsers } from "./api/users/fetchAllUsers";
+import {Button} from "@nextui-org/button";
+import { useCallback, useEffect, useState } from 'react';
+import { UserType } from "@/types/userType";
+
+import {Input} from "@nextui-org/input";
+import { MagnifyingGlassIcon, BuildingOffice2Icon, UserPlusIcon } from "@heroicons/react/24/outline";
+
+import {RadioGroup, Radio} from "@nextui-org/radio";
+
+const CURRENT_PAGE = 1;
+const RECORDS_PER_PAGE = 25;
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+  const [page, setPage] = useState<number>(CURRENT_PAGE);
+  const [usersList, setUsersList] = useState<UserType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchText, setSearchText] = useState<string>('');
+  const [searchByGender, setSearchByGender] = useState<string>('all');
+  const [searchByStatus, setSearchByStatus] = useState<string>('all');
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    const users = await fetchAllUsers({
+      current_page: page,
+      page_size: RECORDS_PER_PAGE,
+      search_param: searchText,
+      search_gender: searchByGender,
+      search_status: searchByStatus,
+    });
+
+    setUsersList([...usersList,...users]);
+    setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchText, searchByGender, searchByStatus]);
+  
+  const searchUsers = useCallback(async () => {
+    setPage(CURRENT_PAGE);
+    setLoading(true);
+    const users = await fetchAllUsers({
+      current_page: page,
+      page_size: RECORDS_PER_PAGE,
+      search_param: searchText,
+      search_gender: searchByGender,
+      search_status: searchByStatus,
+    });
+
+    setUsersList(users);
+    setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchText, searchByGender, searchByStatus]);
+
+  useEffect(() => {
+    loadUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    loadUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  useEffect(() => {
+    searchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText, searchByGender, searchByStatus]);
+
+
+  return (
+    <>
+      <div className="w-full py-3">
+        <Input
+            classNames={{
+                base: "max-w-full h-10",
+                mainWrapper: "h-full",
+                input: "text-small",
+                inputWrapper: "h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20",
+            }}
+            placeholder="Escriba para buscar..."
+            size="sm"
+            startContent={<MagnifyingGlassIcon className="w-4 h-4" />}
+            type="search"
+            onValueChange={text => {
+              setUsersList([]);
+              setSearchText(text);
+            }}
+            onClear={() => {
+              setSearchText('');
+              setPage(CURRENT_PAGE);
+              setUsersList([]);
+            }}
         />
       </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className="flex flex-row items-center my-4 gap-x-7">
+        <RadioGroup
+            value={searchByStatus}
+            label="Filtrar por Status"
+            orientation="horizontal"
+            onValueChange={setSearchByStatus}
+            >
+            <Radio value="all">Todos</Radio>
+            <Radio value="active">Activos</Radio>
+            <Radio value="inactive">Inactivos</Radio>
+        </RadioGroup>
+        <RadioGroup
+            value={searchByGender}
+            label="Filtrar por Género"
+            orientation="horizontal"
+            onValueChange={setSearchByGender}
+            >
+            <Radio value="all">Todos</Radio>
+            <Radio value="male">Masculino</Radio>
+            <Radio value="female">Femenino</Radio>
+        </RadioGroup>
       </div>
-    </main>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 py-3">
+        {usersList.map((user) => (
+          <UserCard key={user.id} user={user} />
+        ))}
+      </div>
+      <Button 
+        className="w-full" 
+        variant="bordered" 
+        color="primary" 
+        isLoading={loading}
+        onClick={() => setPage(page + 1)}
+        >Cargar mas</Button>
+    </>
   );
 }
