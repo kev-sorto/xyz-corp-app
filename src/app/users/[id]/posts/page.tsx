@@ -111,8 +111,8 @@ export default function UserPosts({ params }: { params: { id: number } }) {
                 <div className="flex flex-col ml-3">
                     <p>Nombre: <span className="font-semibold">{user.name}</span></p>
                     <p>Email: <span className="font-semibold">{user.email}</span> </p>
-                    <p>Género: <span className="font-semibold">{user.gender}</span></p>
-                    <p>Status: <span className="font-semibold">{user.status}</span></p>
+                    <p>Género: <span className="font-semibold">{user.gender === 'male' ? 'Masculino' : 'Femenino'}</span></p>
+                    <p>Status: <span className="font-semibold">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span></p>
                     <Button onPress={onOpen} color="default" variant="bordered" className="my-3" endContent={<PencilIcon className="w-4 h-4"/>}>
                         Nuevo Post
                     </Button>
@@ -157,7 +157,7 @@ export default function UserPosts({ params }: { params: { id: number } }) {
                         Cancelar
                     </Button>
                     <Button color="primary" onPress={savePost} isDisabled={isInvalidContent || isInvalidTitle}>
-                        Registrar
+                        Publicar
                     </Button>
                 </ModalFooter>
             </>
